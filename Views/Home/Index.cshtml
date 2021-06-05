@@ -1,0 +1,23 @@
+﻿@model JoshuaPortelliSynoptic.ViewModel.HomeViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<form asp-action="EncryptImages" enctype="multipart/form-data">
+
+    <label asp-for="Picture" class="control-label"></label>
+    <input type="file" name="file" class="form-control" />
+    <span name="file" class="text-danger"></span>
+    <hr />
+    <input type="checkbox" asp-for="Checked" /> <p>Encrypted</p>
+    <input asp-for="Text" placeholder="Text to encode within the image" />
+    <hr />
+
+    <h5>Password: </h5>
+    <input type="password" asp-for="Password" />
+    <hr />
+    <input type="submit" value="Hide"/>
+
+    <input type="submit" value="Extract" />
+</form>
