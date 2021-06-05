@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using JoshuaPortelliSynoptic.Models;
 using JoshuaPortelliSynoptic.ViewModel;
+using SecuringSynoptic;
+using System.Drawing;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace JoshuaPortelliSynoptic.Controllers
 {
@@ -29,17 +33,59 @@ namespace JoshuaPortelliSynoptic.Controllers
             return View();
         }
 
-        /*public ActionResult EncryptImages(HomeViewModel ivm, bool encrypt)
+        public ActionResult Encrypt(HomeViewModel ivm, IFormFile file)
         {
-            EncryptImage.Encrypt();
-            return RedirectToAction("Index", "Home");
-        }*/
+            Bitmap img;
+            using (var memoryStream = new MemoryStream())
+            {
+                file.CopyTo(memoryStream);
+                Image tempImg = Image.FromStream(memoryStream);
+                img = (Bitmap)tempImg;
+            }
+            string encryptedText = CipherHelper.Encrypt(ivm.Text, ivm.Password);
+            img = Steganography.embedText(encryptedText, img);
+            var stream = new MemoryStream();
+            
+            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+            //string format = MediaTypeNames.Application.Octet.ToString(); -> doing this leads to direct download
+            string format = "image/png";
+            stream.Seek(0, SeekOrigin.Begin);
+            FileStreamResult res = base.File(stream, format); ;
+
+            res.FileDownloadName = "hidden_image.png";
+            return res;
+        }
+
+        public ActionResult Decrypt(HomeViewModel ivm, IFormFile file)
+        {
+            Bitmap img;
+            using (var memoryStream = new MemoryStream())
+            {
+                file.CopyTo(memoryStream);
+                Image tempImg = Image.FromStream(memoryStream);
+                img = (Bitmap)tempImg;
+            }
+            string encryptedText = CipherHelper.Encrypt(ivm.Text, ivm.Password);
+            img = Steganography.embedText(encryptedText, img);
+            var stream = new MemoryStream();
+
+            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+
+            //string format = MediaTypeNames.Application.Octet.ToString(); -> doing this leads to direct download
+            string format = "image/png";
+            stream.Seek(0, SeekOrigin.Begin);
+            FileStreamResult res = base.File(stream, format); ;
+
+            res.FileDownloadName = "hidden_image.png";
+            return res;
+        }
+
+        /*[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        }*/
 
         /*
         [HttpPost]
@@ -60,8 +106,8 @@ namespace JoshuaPortelliSynoptic.Controllers
             }
             return View();
         }
-        */
-        /*
+        
+        
         private string UploadedFile(HomeViewModel model)
         {
             string uniqueFileName = null;

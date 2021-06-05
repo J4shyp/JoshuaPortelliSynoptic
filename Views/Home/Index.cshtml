@@ -4,7 +4,7 @@
     ViewData["Title"] = "Home Page";
 }
 
-<form asp-action="EncryptImages" enctype="multipart/form-data">
+<form asp-action="Encrypt" enctype="multipart/form-data">
 
     <label asp-for="Picture" class="control-label"></label>
     <input type="file" name="file" class="form-control" />
@@ -15,7 +15,7 @@
     <hr />
 
     <h5>Password: </h5>
-    <input type="password" asp-for="Password" />
+    <input type="password" asp-for="Password" required/>
     <hr />
     <input type="submit" value="Hide"/>
 

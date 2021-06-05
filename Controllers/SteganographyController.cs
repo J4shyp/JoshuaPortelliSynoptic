@@ -51,7 +51,7 @@ namespace steganographyProj.Controllers
 
 
             // hide message in bitmap
-            img = SteganographyHelper.MergeText(plaintext, img);
+            img = SteganographyHelper.embedText(plaintext, img);
 
 
             // new memory stream for bitmap to png converion
@@ -93,7 +93,7 @@ namespace steganographyProj.Controllers
 
 
             // hide message in bitmap
-            string plaintext = SteganographyHelper.ExtractText(img);
+            string plaintext = SteganographyHelper.extractText(img);
 
             ViewData["text"] = plaintext;
             return View();
