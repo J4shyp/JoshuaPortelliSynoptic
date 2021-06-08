@@ -11,8 +11,9 @@ using System.Drawing;
 using steganographyProj.CryptographyLogic;
 using Microsoft.Extensions.Logging;
 using JoshuaPortelliSynoptic.Controllers;
+using JoshuaPortelliSynoptic.CryptographyLogic;
 
-namespace steganographyProj.Controllers
+namespace JoshuaPortelliSynoptic.Controllers
 {
     public class SteganographyController : Controller
     {
@@ -28,7 +29,7 @@ namespace steganographyProj.Controllers
         }
         
 
-        [HttpPost("/steganography/encode")]
+        
         public IActionResult encode(IFormFile file, string plaintext)
         {
             //IFormFile file = files[0];
@@ -48,7 +49,6 @@ namespace steganographyProj.Controllers
                 Image tempImg = Image.FromStream(memoryStream);
                 img = (Bitmap)tempImg;
             }
-
 
             // hide message in bitmap
             img = SteganographyHelper.embedText(plaintext, img);
@@ -71,7 +71,7 @@ namespace steganographyProj.Controllers
             return res;
 
         }
-        [HttpPost("/steganography/decode")]
+        
         public IActionResult decode(IFormFile file)
         {
             if (file == null || file.Length == 0)

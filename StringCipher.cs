@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Crypto.Engines;
+﻿using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
 using Org.BouncyCastle.Crypto.Paddings;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -67,17 +68,32 @@ public static class CipherHelper
             var comparisonBytes = new byte[cipher.GetOutputSize(cipherTextBytes.Length)];
             var length = cipher.ProcessBytes(cipherTextBytes, comparisonBytes, 0);
 
-            cipher.DoFinal(comparisonBytes, length);
+            try
+            {
+                cipher.DoFinal(comparisonBytes, length);
+            }
+            catch(InvalidCipherTextException e)
+            {
+                System.Diagnostics.Debug.Print("error");
+            }
             //return Convert.ToBase64String(saltStringBytes.Concat(ivStringBytes).Concat(comparisonBytes).ToArray());
 
-            var nullIndex = comparisonBytes.Length - 1;
-            while (comparisonBytes[nullIndex] == (byte)0)
-                nullIndex--;
-            comparisonBytes = comparisonBytes.Take(nullIndex + 1).ToArray();
+            try
+            {
+                var nullIndex = comparisonBytes.Length - 1;
+                while (comparisonBytes[nullIndex] == (byte)0)
+                    nullIndex--;
+                comparisonBytes = comparisonBytes.Take(nullIndex + 1).ToArray();
 
-            var result = Encoding.UTF8.GetString(comparisonBytes, 0, comparisonBytes.Length);
+                var result = Encoding.UTF8.GetString(comparisonBytes, 0, comparisonBytes.Length);
 
-            return result;
+                return result;
+            }
+            catch(System.IndexOutOfRangeException e)
+            {
+                System.Diagnostics.Debug.Print("error");
+                return null; 
+            }
         }
     }
 

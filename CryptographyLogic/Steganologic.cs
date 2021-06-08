@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 //using System.Drawing.Common;
 
-namespace steganographyProj.CryptographyLogic
+namespace JoshuaPortelliSynoptic.CryptographyLogic
 {
 
     class SteganographyHelper

@@ -33,96 +33,69 @@ namespace JoshuaPortelliSynoptic.Controllers
             return View();
         }
 
+        [HttpPost("/Steganography/encode")]
         public ActionResult Encrypt(HomeViewModel ivm, IFormFile file)
         {
-            Bitmap img;
-            using (var memoryStream = new MemoryStream())
+            string strpath = Path.GetExtension(file.FileName);
+            if (strpath != ".jpg" && strpath != ".jpeg" && file.Length !<= 10000000)
             {
-                file.CopyTo(memoryStream);
-                Image tempImg = Image.FromStream(memoryStream);
-                img = (Bitmap)tempImg;
+                ViewData["text"] = "Not a jpg file";
+                return View();
             }
-            string encryptedText = CipherHelper.Encrypt(ivm.Text, ivm.Password);
-            img = Steganography.embedText(encryptedText, img);
-            var stream = new MemoryStream();
-            
-            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            else
+            {
+                Bitmap img;
+                using (var memoryStream = new MemoryStream())
+                {
+                    file.CopyTo(memoryStream);
+                    Image tempImg = Image.FromStream(memoryStream);
+                    img = (Bitmap)tempImg;
+                }
+                string encryptedText = CipherHelper.Encrypt(ivm.Text, ivm.Password);
+                img = Steganography.embedText(encryptedText, img);
+                var stream = new MemoryStream();
 
-            //string format = MediaTypeNames.Application.Octet.ToString(); -> doing this leads to direct download
-            string format = "image/png";
-            stream.Seek(0, SeekOrigin.Begin);
-            FileStreamResult res = base.File(stream, format); ;
+                img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
 
-            res.FileDownloadName = "hidden_image.png";
-            return res;
+                string format = "image/png";
+                stream.Seek(0, SeekOrigin.Begin);
+                FileStreamResult res = base.File(stream, format); ;
+
+                res.FileDownloadName = "hidden_image.png";
+                return res;
+            }
         }
 
+        [HttpPost("/Steganography/decode")]
         public ActionResult Decrypt(HomeViewModel ivm, IFormFile file)
         {
-            Bitmap img;
-            using (var memoryStream = new MemoryStream())
+            string strpath = Path.GetExtension(file.FileName);
+            if (strpath != ".png" && file.Length <= 10000000)
             {
-                file.CopyTo(memoryStream);
-                Image tempImg = Image.FromStream(memoryStream);
-                img = (Bitmap)tempImg;
+                ViewData["text"] = "Not a png file";
+                return View();
             }
-            string encryptedText = CipherHelper.Encrypt(ivm.Text, ivm.Password);
-            img = Steganography.embedText(encryptedText, img);
-            var stream = new MemoryStream();
-
-            img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-
-            //string format = MediaTypeNames.Application.Octet.ToString(); -> doing this leads to direct download
-            string format = "image/png";
-            stream.Seek(0, SeekOrigin.Begin);
-            FileStreamResult res = base.File(stream, format); ;
-
-            res.FileDownloadName = "hidden_image.png";
-            return res;
-        }
-
-        /*[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }*/
-
-        /*
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> New(HomeViewModel model)
-        {
-            if (ModelState.IsValid)
+            else
             {
-                string uniqueFileName = UploadedFile(model);
-
-                Home home = new Home
+                Bitmap img;
+                using (var memoryStream = new MemoryStream())
                 {
-                    Text = model.Text,
-                    Password = model.Password,
-                    Picture = uniqueFileName,
-                };
-                return RedirectToAction(nameof(Index));
-            }
-            return View();
-        }
-        
-        
-        private string UploadedFile(HomeViewModel model)
-        {
-            string uniqueFileName = null;
-
-            if (model.Picture != null)
-            {
-                string uploadsFolder = Path.Combine(webHostEnvironment.WebRootPath, "images");
-                uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfileImage.FileName;
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    model.ProfileImage.CopyTo(fileStream);
+                    file.CopyTo(memoryStream);
+                    Image tempImg = Image.FromStream(memoryStream);
+                    img = (Bitmap)tempImg;
                 }
+                string plaintext = Steganography.extractText(img);
+                string decryptedText = CipherHelper.Decrypt(plaintext, ivm.Password);
+
+                var stream = new MemoryStream();
+                string format = "image/png";
+                stream.Seek(0, SeekOrigin.Begin);
+                FileStreamResult res = base.File(stream, format); ;
+
+                ViewData["text"] = decryptedText;
+                return View();
+
             }
-            return uniqueFileName;
-        }*/
+        }
     }
 }
