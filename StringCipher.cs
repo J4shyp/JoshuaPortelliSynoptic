@@ -10,17 +10,15 @@ using System.Text;
 
 public static class CipherHelper
 {
-    // This constant is used to determine the keysize of the encryption algorithm in bits.
-    // We divide this by 8 within the code below to get the equivalent number of bytes.
+    //encryption key size in bits
     private const int Keysize = 256;
 
-    // This constant determines the number of iterations for the password bytes generation function.
+    //iterations for password
     private const int DerivationIterations = 1000;
 
     public static string Encrypt(string plainText, string passPhrase)
     {
-        // Salt and IV is randomly generated each time, but is preprended to encrypted cipher text
-        // so that the same Salt and IV values can be used when decrypting.
+        //encrypted cipher text to be used when decrypting
         var saltStringBytes = Generate256BitsOfRandomEntropy();
         var ivStringBytes = Generate256BitsOfRandomEntropy();
         var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
@@ -38,21 +36,19 @@ public static class CipherHelper
             var length = cipher.ProcessBytes(plainTextBytes, comparisonBytes, 0);
 
             cipher.DoFinal(comparisonBytes, length);
-            // return Convert.ToBase64String(comparisonBytes);
             return Convert.ToBase64String(saltStringBytes.Concat(ivStringBytes).Concat(comparisonBytes).ToArray());
         }
     }
 
     public static string Decrypt(string cipherText, string passPhrase)
     {
-        // Get the complete stream of bytes that represent:
-        // [32 bytes of Salt] + [32 bytes of IV] + [n bytes of CipherText]
+        //get bytes
         var cipherTextBytesWithSaltAndIv = Convert.FromBase64String(cipherText);
-        // Get the saltbytes by extracting the first 32 bytes from the supplied cipherText bytes.
+        //get first 32 bytes from cipherText bytes
         var saltStringBytes = cipherTextBytesWithSaltAndIv.Take(Keysize / 8).ToArray();
-        // Get the IV bytes by extracting the next 32 bytes from the supplied cipherText bytes.
+        //get next 32 bytes from cipherText bytes
         var ivStringBytes = cipherTextBytesWithSaltAndIv.Skip(Keysize / 8).Take(Keysize / 8).ToArray();
-        // Get the actual cipher text bytes by removing the first 64 bytes from the cipherText string.
+        // get actual cipher bytes
         var cipherTextBytes = cipherTextBytesWithSaltAndIv.Skip((Keysize / 8) * 2).Take(cipherTextBytesWithSaltAndIv.Length - ((Keysize / 8) * 2)).ToArray();
 
         using (var password = new Rfc2898DeriveBytes(passPhrase, saltStringBytes, DerivationIterations))
@@ -76,7 +72,6 @@ public static class CipherHelper
             {
                 System.Diagnostics.Debug.Print("error");
             }
-            //return Convert.ToBase64String(saltStringBytes.Concat(ivStringBytes).Concat(comparisonBytes).ToArray());
 
             try
             {
@@ -99,10 +94,9 @@ public static class CipherHelper
 
     private static byte[] Generate256BitsOfRandomEntropy()
     {
-        var randomBytes = new byte[32]; // 32 Bytes will give us 256 bits.
+        var randomBytes = new byte[32];
         using (var rngCsp = new RNGCryptoServiceProvider())
         {
-            // Fill the array with cryptographically secure random bytes.
             rngCsp.GetBytes(randomBytes);
         }
         return randomBytes;
